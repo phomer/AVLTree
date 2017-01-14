@@ -12,10 +12,23 @@ import (
 )
 
 func TestStart(t *testing.T) {
-    fmt.Printf("Call Start\n")
-    AVLTree.Start()
+    fmt.Printf("Building a tree\n")
+
+    for _,array := range TableData() {
+	tree := new(AVLTree.Tree)
+
+	for _,value := range array {
+	    tree.Insert(value)
+	}
+	tree.Print()
+    }
 }
 
-func ExamplePrint() {
-    fmt.Printf("Print Something\n")
+func TableData() ([][]int) {
+    data := [][]int{
+	[]int { 1, 2, 3, 4, 5, 6, 7 },
+	[]int { 7, 6, 5, 4, 3, 3, 1 },
+	[]int { 7, 5, 23, 18, 3, 3, 1, 19 },
+    }
+    return data
 }

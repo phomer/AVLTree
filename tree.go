@@ -17,6 +17,7 @@ type Tree struct {
 // Each node in the tree
 type Node struct {
     value int
+
     balance int
     left *Node
     right *Node
@@ -39,19 +40,26 @@ func Start() {
 func (tree *Tree) Insert(value int) {
     if tree.root == nil {
 	tree.root = &Node{value: value}
-	tree.Print()
-    } else {
-	fmt.Printf("Second Node\n")
-	tree.root.Insert(value)
+	return
     }
+
+    tree.root.Insert(value)
+}
+
+// Compare two values, 
+func (node Node) Compare(value int) (int) {
+    return node.value - value
 }
 
 // Insert a node
 func (node *Node) Insert(value int) {
-    if value == node.value {
-	return 
+    diff := node.Compare(value) 
 
-    } else if (value < node.value) {
+    if diff == 0 {
+	return 
+    }
+
+    if (diff > 0) {
 	if node.left == nil {
 	    node.left = &Node{value: value}
 	} else {
