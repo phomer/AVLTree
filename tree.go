@@ -5,6 +5,7 @@ package AVLTree
 
 import (
     "fmt"
+    "strconv"
 )
 
 // Overall Tree Structure
@@ -27,15 +28,15 @@ func (tree Tree) Exists(value int) (bool) {
 
 // Remove, return true if successful
 func (tree *Tree) Delete(value int) (bool) {
+    var status bool = false
+
     if tree.root == nil {
-	return false
-    }
-    // TODO: Wrong
-    if tree.root.Delete(value) != tree.root {
-	return true
+	return status
     }
 
-    return false
+    tree.root, status = tree.root.Delete(value)
+
+    return status
 }
 
 // Print the tree
@@ -110,9 +111,11 @@ func (node *Node) RotateLeft() (*Node) {
     node.balance = left_balance - 1 - Max(balance, 0)
     result.balance = Min3(left_balance - 2, balance + left_balance - 2, balance - 1)
 
+    /*
     fmt.Printf("Rotated Left to %v [%v->%v] from %v [%v->%v]\n", 
 	result.value, balance, result.balance, 
 	node.value, left_balance, node.balance)
+    */
 
     return result
 }
@@ -137,9 +140,11 @@ func (node *Node) RotateRight() (*Node) {
     node.balance = right_balance + 1 - Min(balance, 0)
     result.balance = Max3(right_balance + 2, balance + right_balance + 2, balance + 1)
 
+    /*
     fmt.Printf("Rotated Right to %v [%v->%v] from %v [%v->%v]\n", 
 	result.value, balance, result.balance, 
 	node.value, right_balance, node.balance)
+    */
 
     return result
 }
@@ -154,6 +159,7 @@ func (node *Node) Insert(value int) (*Node, int) {
 
     var change int = 0
 
+    // Descend to the children
     diff := node.Compare(value) 
     switch {
 
@@ -168,32 +174,26 @@ func (node *Node) Insert(value int) (*Node, int) {
 	node.right, change = node.right.Insert(value)
     }
 
-    fmt.Printf("for value %v at value %v balance %v change %v\n", value, node.value, node.balance, change)
-
     node.balance += change
 
-    // Rebalance at the parents
+    // Rebalance at the parents or grandparents
     var insert int = 0
 
     if node.balance != 0 && change != 0 {
 	switch {
 
 	case node.balance < -1:
-	    node.Print(16)
 	    if node.left.balance >= 0 {
 		node.left = node.left.RotateLeft()
 	    }
 	    node = node.RotateRight()
-	    node.Print(16)
 	    insert = 0
 
 	case node.balance > 1:
-	    node.Print(16)
 	    if node.right.balance <= 0 {
 		node.right = node.right.RotateRight()
 	    }
 	    node = node.RotateLeft()
-	    node.Print(16)
 	    insert = 0
 
 	default:
@@ -207,34 +207,67 @@ func (node *Node) Insert(value int) (*Node, int) {
 }
 
 // Delete a node
-func (node *Node) Delete(value int) (*Node) {
+func (node *Node) Delete(value int) (*Node, bool) {
+    var status bool = false
+
     if node == nil {
-	return nil
+	return nil, status
     }
 
-    if node.Compare(value) == 0 {
-	if (node.left == nil) {
-	    return node.right
-	} else {
-	    if (node.right == nil) {
-		return node.left
+    diff := node.Compare(value) 
+    switch {
+    case diff > 0:
+	node.left, status = node.left.Delete(value)
+
+    case diff < 0:
+	node.right, status = node.right.Delete(value)
+	    
+    case diff == 0:
+	switch {
+	case node.left == nil:
+	    return node.right, true
+
+	case node.right == nil:
+	    return node.left, true
+
+	default:
+	    // Pick the heavier of the two...
+	    if -1 * node.left.balance > node.right.balance {
+		node = node.RotateRight()
+		node.right, status = node.right.Delete(value)
+	    } else {
+		node = node.RotateLeft()
+		node.left, status = node.left.Delete(value)
 	    }
-	    return Merge(node.left, node.right)
 	}
     }
 
-    if node.left != nil {
-	node.left = node.left.Delete(value)
+    // Update the balance
+    if status {
 
-    } else if node.right != nil {
-	node.right = node.right.Delete(value)
+	if node.left != nil {
+	    node.balance += node.left.balance
+	} else {
+	    node.balance += 1
+	}
+	if node.right != nil {
+	    node.balance -= node.right.balance
+	} else {
+	    node.balance -= 1
+	}
+
+	fmt.Printf("value %v tree:\n", node.value)
+
+	switch {
+	case node.balance < -1:
+	    node = node.RotateRight()
+
+	case node.balance > 1:
+	    node = node.RotateLeft()
+	}
     }
-    return node
-}
 
-// TODO: Temp
-func Merge(left *Node, right *Node) (*Node) {
-    return left
+    return node, status
 }
 
 // Print the current nodes, rotated 90 degrees, in-order traversal.
@@ -245,11 +278,22 @@ func (node Node) Print(depth int) {
     }
 
     padding := padding(depth)
-    fmt.Printf("%sValue: %v [%v]\n", padding, node.value, node.balance)
+    fmt.Printf("%s[%v] Value: %v\n", padding, symbols(node.balance), node.value)
 
     if node.left != nil {
 	node.left.Print(depth+1)
     }
+}
+
+// Slightly more decorative: shift 1/-1 -> +/-
+func symbols(balance int) (string) {
+    switch {
+    case balance == 1:
+	return "+"
+    case balance == -1:
+	return "-"
+    }
+    return strconv.Itoa(balance)
 }
 
 // Convert depth into spaces, 4 per
