@@ -28,21 +28,25 @@ func (tree Tree) Exists(value int) (bool) {
 
 // Remove, return true if successful
 func (tree *Tree) Delete(value int) (bool) {
-    var status bool = false
+    var change int = 0
 
     if tree.root == nil {
-	return status
+	return false
     }
 
-    tree.root, status = tree.root.Delete(value)
+    tree.root, change = tree.root.Delete(value)
 
-    return status
+    if change == 0 {
+	return false
+    }
+
+    return true
 }
 
 // Print the tree
 func (tree Tree) Print() {
     if tree.root == nil {
-	fmt.Printf("Empty Tree\n")
+	fmt.Printf("--- AVL Tree:\n    EMPTY\n")
 	return
     }
 
@@ -111,12 +115,6 @@ func (node *Node) RotateLeft() (*Node) {
     node.balance = left_balance - 1 - Max(balance, 0)
     result.balance = Min3(left_balance - 2, balance + left_balance - 2, balance - 1)
 
-    /*
-    fmt.Printf("Rotated Left to %v [%v->%v] from %v [%v->%v]\n", 
-	result.value, balance, result.balance, 
-	node.value, left_balance, node.balance)
-    */
-
     return result
 }
 
@@ -139,12 +137,6 @@ func (node *Node) RotateRight() (*Node) {
 
     node.balance = right_balance + 1 - Min(balance, 0)
     result.balance = Max3(right_balance + 2, balance + right_balance + 2, balance + 1)
-
-    /*
-    fmt.Printf("Rotated Right to %v [%v->%v] from %v [%v->%v]\n", 
-	result.value, balance, result.balance, 
-	node.value, right_balance, node.balance)
-    */
 
     return result
 }
@@ -207,56 +199,50 @@ func (node *Node) Insert(value int) (*Node, int) {
 }
 
 // Delete a node
-func (node *Node) Delete(value int) (*Node, bool) {
-    var status bool = false
+func (node *Node) Delete(value int) (*Node, int) {
+    var change int = 0
 
     if node == nil {
-	return nil, status
+	return nil, change
     }
 
     diff := node.Compare(value) 
     switch {
     case diff > 0:
-	node.left, status = node.left.Delete(value)
+	node.left, change = node.left.Delete(value)
 
     case diff < 0:
-	node.right, status = node.right.Delete(value)
+	node.right, change = node.right.Delete(value)
+	change *= -1
 	    
     case diff == 0:
 	switch {
 	case node.left == nil:
-	    return node.right, true
+	    return node.right, 1
 
 	case node.right == nil:
-	    return node.left, true
+	    return node.left, 1
 
 	default:
 	    // Pick the heavier of the two...
-	    if -1 * node.left.balance > node.right.balance {
-		node = node.RotateRight()
-		node.right, status = node.right.Delete(value)
-	    } else {
+	    if -1 * node.left.balance < node.right.balance {
 		node = node.RotateLeft()
-		node.left, status = node.left.Delete(value)
+		node.left, change = node.left.Delete(value)
+
+	    } else {
+		node = node.RotateRight()
+		node.right, change = node.right.Delete(value)
+		change *= -1
 	    }
 	}
     }
 
     // Update the balance
-    if status {
+    if change != 0 {
 
-	if node.left != nil {
-	    node.balance += node.left.balance
-	} else {
-	    node.balance += 1
+	if node.balance != change {
+	    node.balance += change
 	}
-	if node.right != nil {
-	    node.balance -= node.right.balance
-	} else {
-	    node.balance -= 1
-	}
-
-	fmt.Printf("value %v tree:\n", node.value)
 
 	switch {
 	case node.balance < -1:
@@ -267,7 +253,7 @@ func (node *Node) Delete(value int) (*Node, bool) {
 	}
     }
 
-    return node, status
+    return node, change
 }
 
 // Print the current nodes, rotated 90 degrees, in-order traversal.

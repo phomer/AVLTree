@@ -10,8 +10,8 @@ import (
     "github.com/phomer/AVLTree"
 )
 
-// Test the basic tree functionality
-func xTestInsert(t *testing.T) {
+// Test lots of inserts
+func TestInsert(t *testing.T) {
     fmt.Printf("Creating a tree\n")
 
     for _,array := range TableData() {
@@ -24,6 +24,7 @@ func xTestInsert(t *testing.T) {
     }
 }
 
+// test deleting the first tree
 func TestDelete(t *testing.T) {
     fmt.Printf("Deleting a tree\n")
 
@@ -37,11 +38,10 @@ func TestDelete(t *testing.T) {
     }
     tree.Print()
 
-    // Take it apart in reverse order
+    // Take it apart in same order
     for _,value := range list[0] {
 	status := tree.Delete(value)
 	if status {
-	    fmt.Printf("Deleted %v:\n", value)
 	    tree.Print()
 	} else {
 	    fmt.Printf("Not Found %v:\n", value)
@@ -53,7 +53,6 @@ func TestDelete(t *testing.T) {
 // Internal list of table driven data
 func TableData() ([][]int) {
     data := [][]int{
-	[]int { 1, 2, 3, 4, 5 },
 	[]int { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
 	    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 },
 	[]int { 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 },
