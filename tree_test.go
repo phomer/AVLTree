@@ -1,6 +1,5 @@
 /*
     Description: Test the AVLTree implementation
-
 */
 
 package AVLTree_test
@@ -11,6 +10,7 @@ import (
     "github.com/phomer/AVLTree"
 )
 
+// Test the basic tree functionality
 func TestStart(t *testing.T) {
     fmt.Printf("Building a tree\n")
 
@@ -18,12 +18,15 @@ func TestStart(t *testing.T) {
 	tree := new(AVLTree.Tree)
 
 	for _,value := range array {
-	    tree.Insert(value)
+	    if !tree.Exists(value) {
+		tree.Insert(value)
+	    }
 	}
 	tree.Print()
     }
 }
 
+// Internal list of table driven data
 func TableData() ([][]int) {
     data := [][]int{
 	[]int { 1, 2, 3, 4, 5, 6, 7 },
