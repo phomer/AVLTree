@@ -104,11 +104,15 @@ func (node *Node) RotateLeft() (*Node) {
     node.right = result.left
     result.left = node
 
-    var left_balance = result.balance
-    var balance = node.balance
+    var left_balance = node.balance
+    var balance = result.balance
 
-    node.balance = balance -1 - Max(left_balance,0)
-    result.balance = Min3(balance-2, balance+left_balance-2, balance-1)
+    node.balance = left_balance - 1 - Max(balance, 0)
+    result.balance = Min3(left_balance - 2, balance + left_balance - 2, balance - 1)
+
+    fmt.Printf("Rotated Left to %v [%v->%v] from %v [%v->%v]\n", 
+	result.value, balance, result.balance, 
+	node.value, left_balance, node.balance)
 
     return result
 }
@@ -127,11 +131,15 @@ func (node *Node) RotateRight() (*Node) {
     node.left = result.right
     result.right = node
 
-    var right_balance = result.balance
-    var balance = node.balance
+    var right_balance = node.balance
+    var balance = result.balance
 
-    node.balance = balance -1 - Max(right_balance,0)
-    result.balance = Min3(balance-2, balance+right_balance-2, balance-1)
+    node.balance = right_balance + 1 - Min(balance, 0)
+    result.balance = Max3(right_balance + 2, balance + right_balance + 2, balance + 1)
+
+    fmt.Printf("Rotated Right to %v [%v->%v] from %v [%v->%v]\n", 
+	result.value, balance, result.balance, 
+	node.value, right_balance, node.balance)
 
     return result
 }
@@ -141,7 +149,7 @@ func (node *Node) Insert(value int) (*Node, int) {
 
     // Terminal Condition, create this node
     if node == nil {
-	return &Node{value: value}, 1
+	return &Node{value: value, balance: 0}, 1
     }
 
     var change int = 0
@@ -160,33 +168,39 @@ func (node *Node) Insert(value int) (*Node, int) {
 	node.right, change = node.right.Insert(value)
     }
 
-    //fmt.Printf("for value %v balance %v change %v\n", value, node.balance, change)
+    fmt.Printf("for value %v at value %v balance %v change %v\n", value, node.value, node.balance, change)
 
-    // Rebalance at the parent
+    node.balance += change
+
+    // Rebalance at the parents
     var insert int = 0
-    var balance = node.balance + change
 
-    if balance != 0 && change != 0 {
+    if node.balance != 0 && change != 0 {
 	switch {
 
-	case balance < -1:
-	    if node.left.balance < 0 {
+	case node.balance < -1:
+	    node.Print(16)
+	    if node.left.balance >= 0 {
 		node.left = node.left.RotateLeft()
 	    }
 	    node = node.RotateRight()
+	    node.Print(16)
 	    insert = 0
 
-	case balance > 1:
-	    if node.right.balance > 0 {
+	case node.balance > 1:
+	    node.Print(16)
+	    if node.right.balance <= 0 {
 		node.right = node.right.RotateRight()
 	    }
 	    node = node.RotateLeft()
+	    node.Print(16)
 	    insert = 0
 
 	default:
 	    insert = 1
-	    node.balance = balance
 	}
+    } else if change != 0 {
+	insert = 0
     }
 
     return node, insert
@@ -223,17 +237,18 @@ func Merge(left *Node, right *Node) (*Node) {
     return left
 }
 
-// Print the current node
+// Print the current nodes, rotated 90 degrees, in-order traversal.
 func (node Node) Print(depth int) {
-    if node.left != nil {
-	node.left.Print(depth+1)
-    }
-
-    padding := padding(depth)
-    fmt.Printf("%sValue: %v\n", padding, node.value)
 
     if node.right != nil {
 	node.right.Print(depth+1)
+    }
+
+    padding := padding(depth)
+    fmt.Printf("%sValue: %v [%v]\n", padding, node.value, node.balance)
+
+    if node.left != nil {
+	node.left.Print(depth+1)
     }
 }
 
@@ -262,4 +277,7 @@ func Min(x int, y int) (int) {
 
 func Min3(x int, y int, z int) (int) {
     return Min(Min(x,y),z)
+}
+func Max3(x int, y int, z int) (int) {
+    return Max(Max(x,y),z)
 }
