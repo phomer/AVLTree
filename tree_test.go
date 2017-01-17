@@ -20,7 +20,7 @@ func TestInsert(t *testing.T) {
 	for _,value := range array {
 	    tree.Insert(value)
 	}
-	tree.Print()
+	//tree.Print()
     }
 }
 
@@ -36,19 +36,17 @@ func TestDelete(t *testing.T) {
     for _,value := range list[0] {
 	tree.Insert(value)
     }
-    tree.Print()
+    //tree.Print()
 
     // Take it apart in same order
     for _,value := range list[0] {
 	status := tree.Delete(value)
-	if status {
-	    tree.Print()
-	} else {
+	if !status {
 	    fmt.Printf("Not Found %v:\n", value)
 	}
     }
+    //tree.Print()
 } 
-
 
 // Internal list of table driven data
 func TableData() ([][]int) {

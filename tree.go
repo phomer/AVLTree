@@ -1,5 +1,5 @@
 /*
-    Description: Simple AVLTree implementation
+    Description: Simple AVL Tree implementation
 */
 package AVLTree
 
@@ -13,17 +13,17 @@ type Tree struct {
     root *Node
 }
 
-// Insert an element in the tree
-func (tree *Tree) Insert(value int) {
-    tree.root, _ = tree.root.Insert(value)
-}
-
 // Test to see if this is in the tree or not. 
 func (tree Tree) Exists(value int) (bool) {
     if tree.root == nil || tree.root.Find(value) == nil {
 	return false;
     }
     return true;
+}
+
+// Insert an element in the tree
+func (tree *Tree) Insert(value int) {
+    tree.root, _ = tree.root.Insert(value)
 }
 
 // Remove, return true if successful
@@ -43,6 +43,12 @@ func (tree *Tree) Delete(value int) (bool) {
     return true
 }
 
+// Update, not sure if this is what was intended...
+func (tree *Tree) Update(orig int, value int) {
+    tree.Delete(orig)
+    tree.Insert(value)
+}
+
 // Print the tree
 func (tree Tree) Print() {
     if tree.root == nil {
@@ -55,7 +61,7 @@ func (tree Tree) Print() {
 }
 
 /*
-    Tree Nodes
+    AVL Tree Nodes
 */
 
 // Each node in the tree
@@ -113,7 +119,7 @@ func (node *Node) RotateLeft() (*Node) {
     var balance = result.balance
 
     node.balance = left_balance - 1 - Max(balance, 0)
-    result.balance = Min3(left_balance - 2, balance + left_balance - 2, balance - 1)
+    result.balance = Min(left_balance - 2, balance + left_balance - 2, balance - 1)
 
     return result
 }
@@ -136,7 +142,7 @@ func (node *Node) RotateRight() (*Node) {
     var balance = result.balance
 
     node.balance = right_balance + 1 - Min(balance, 0)
-    result.balance = Max3(right_balance + 2, balance + right_balance + 2, balance + 1)
+    result.balance = Max(right_balance + 2, balance + right_balance + 2, balance + 1)
 
     return result
 }
@@ -246,9 +252,15 @@ func (node *Node) Delete(value int) (*Node, int) {
 
 	switch {
 	case node.balance < -1:
+	    if node.left.balance >= 0 {
+		node.left = node.left.RotateLeft()
+	    }
 	    node = node.RotateRight()
 
 	case node.balance > 1:
+	    if node.right.balance <= 0 {
+		node.right = node.right.RotateRight()
+	    }
 	    node = node.RotateLeft()
 	}
     }
@@ -291,23 +303,23 @@ func padding (size int) (string) {
     return result
 }
 
-func Max(x int, y int) (int) {
-    if x > y {
-	return x
+func Max(values ...int) (int) {
+    var total int = values[0]
+    for _,value := range values {
+	if (value > total) {
+	    total = value
+	}
     }
-    return y
+    return total
 }
 
-func Min(x int, y int) (int) {
-    if x > y {
-	return y
+func Min(values ...int) (int) {
+    var total int = values[0]
+    for _,value := range values {
+	if (value < total) {
+	    total = value
+	}
     }
-    return x
+    return total
 }
 
-func Min3(x int, y int, z int) (int) {
-    return Min(Min(x,y),z)
-}
-func Max3(x int, y int, z int) (int) {
-    return Max(Max(x,y),z)
-}
