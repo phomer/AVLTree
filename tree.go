@@ -1,6 +1,5 @@
-/*
-   Description: Simple AVL Tree implementation
-*/
+// Package AVLTree Simple AVL Tree implementation
+//
 package AVLTree
 
 import (
@@ -8,12 +7,12 @@ import (
 	"strconv"
 )
 
-// Overall Tree Structure
+// Tree Structure
 type Tree struct {
 	root *Node
 }
 
-// Test to see if this is in the tree or not.
+// Exists to see if this is in the tree or not.
 func (tree Tree) Exists(value int) bool {
 	if tree.root == nil || tree.root.Find(value) == nil {
 		return false
@@ -26,9 +25,9 @@ func (tree *Tree) Insert(value int) {
 	tree.root, _ = tree.root.Insert(value)
 }
 
-// Remove, return true if successful
+// Delete return true if successful
 func (tree *Tree) Delete(value int) bool {
-	var change int = 0
+	var change int
 
 	if tree.root == nil {
 		return false
@@ -43,7 +42,7 @@ func (tree *Tree) Delete(value int) bool {
 	return true
 }
 
-// Update, not sure if this is what was intended...
+// Update the key with a new one
 func (tree *Tree) Update(orig int, value int) {
 	tree.Delete(orig)
 	tree.Insert(value)
@@ -64,7 +63,7 @@ func (tree Tree) Print() {
    AVL Tree Nodes
 */
 
-// Each node in the tree
+// Node in the tree
 type Node struct {
 	value int
 
@@ -78,7 +77,7 @@ func (node Node) Compare(value int) int {
 	return node.value - value
 }
 
-// Walk the tree, searching
+// Find a value in the tree, searching
 func (node *Node) Find(value int) *Node {
 	if node == nil {
 		return nil
@@ -88,7 +87,7 @@ func (node *Node) Find(value int) *Node {
 		return node
 	}
 
-	var result *Node = nil
+	var result *Node
 
 	if node.left != nil {
 		result = node.left.Find(value)
@@ -101,7 +100,7 @@ func (node *Node) Find(value int) *Node {
 	return result
 }
 
-// Rotate the tree to the left
+// RotateLeft the tree 
 func (node *Node) RotateLeft() *Node {
 	if node == nil {
 		return nil
@@ -111,20 +110,21 @@ func (node *Node) RotateLeft() *Node {
 		return node
 	}
 
-	var result *Node = node.right
+	var result = node.right
+
 	node.right = result.left
 	result.left = node
 
-	var left_balance = node.balance
+	var leftBalance = node.balance
 	var balance = result.balance
 
-	node.balance = left_balance - 1 - Max(balance, 0)
-	result.balance = Min(left_balance-2, balance+left_balance-2, balance-1)
+	node.balance = leftBalance - 1 - max(balance, 0)
+	result.balance = min(leftBalance-2, balance+leftBalance-2, balance-1)
 
 	return result
 }
 
-// Rotate the tree to the right
+// RotateRight the tree 
 func (node *Node) RotateRight() *Node {
 	if node == nil {
 		return nil
@@ -134,15 +134,15 @@ func (node *Node) RotateRight() *Node {
 		return node
 	}
 
-	var result *Node = node.left
+	var result = node.left
 	node.left = result.right
 	result.right = node
 
-	var right_balance = node.balance
+	var rightBalance = node.balance
 	var balance = result.balance
 
-	node.balance = right_balance + 1 - Min(balance, 0)
-	result.balance = Max(right_balance+2, balance+right_balance+2, balance+1)
+	node.balance = rightBalance + 1 - min(balance, 0)
+	result.balance = max(rightBalance+2, balance+rightBalance+2, balance+1)
 
 	return result
 }
@@ -155,7 +155,7 @@ func (node *Node) Insert(value int) (*Node, int) {
 		return &Node{value: value, balance: 0}, 1
 	}
 
-	var change int = 0
+	var change int
 
 	// Descend to the children
 	diff := node.Compare(value)
@@ -175,7 +175,7 @@ func (node *Node) Insert(value int) (*Node, int) {
 	node.balance += change
 
 	// Rebalance at the parents or grandparents
-	var insert int = 0
+	var insert int
 
 	if node.balance != 0 && change != 0 {
 		switch {
@@ -206,7 +206,7 @@ func (node *Node) Insert(value int) (*Node, int) {
 
 // Delete a node
 func (node *Node) Delete(value int) (*Node, int) {
-	var change int = 0
+	var change int
 
 	if node == nil {
 		return nil, change
@@ -303,8 +303,8 @@ func padding(size int) string {
 	return result
 }
 
-func Max(values ...int) int {
-	var total int = values[0]
+func max(values ...int) int {
+	var total = values[0]
 	for _, value := range values {
 		if value > total {
 			total = value
@@ -313,8 +313,8 @@ func Max(values ...int) int {
 	return total
 }
 
-func Min(values ...int) int {
-	var total int = values[0]
+func min(values ...int) int {
+	var total = values[0]
 	for _, value := range values {
 		if value < total {
 			total = value
