@@ -10,6 +10,10 @@ import (
 	"testing"
 )
 
+func TestVersion(t *testing.T) {
+    AVLTree.Init()
+}
+
 // Test lots of inserts
 func TestInsert(t *testing.T) {
 	fmt.Printf("Creating a tree\n")

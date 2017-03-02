@@ -7,9 +7,18 @@ import (
 	"strconv"
 )
 
+type Version struct {
+    githash string
+}
+
 // Tree Structure
 type Tree struct {
 	root *Node
+}
+
+func Init() {
+    var version = &Version{githash: "$Id$" }
+    fmt.Printf("Version: %v\n", version.githash)
 }
 
 // Exists to see if this is in the tree or not.
